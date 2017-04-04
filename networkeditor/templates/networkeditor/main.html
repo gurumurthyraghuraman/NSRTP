@@ -1,0 +1,726 @@
+<link href="https://fonts.googleapis.com/css?family=Exo+2" rel="stylesheet">
+<h2 style="font-family: 'Exo 2', sans-serif;">{{ mydata }}</h2>
+    <h3>{{data}}</h3>
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Rancho&effect=shadow-multiple">
+    <title>NSRPT</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      #map {
+          height: 70%;
+          width: 100%;
+      }
+    </style>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.1/css/bootstrap-select.min.css">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.1/js/bootstrap-select.min.js"></script>
+
+	<!-- (Optional) Latest compiled and minified JavaScript translation files -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.1/js/i18n/defaults-*.min.js"></script>
+
+  </head>
+  <body onload="onloadfunc()">
+  <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <!-- Menu Items -->
+            <div>
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="{% url 'index' %}">Topology Manager</a></li>
+                    <li><a href="{% url 'Fault_Analyzer' %}">Fault Analyzer</a></li>
+                    <!--<li><a href="#">Path Analyzer</a></li>-->
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+	<div class="container col-md-5">
+		<form class="form-horizontal" id="dataset"> {% csrf_token %}
+			<fieldset>
+
+			<!-- Form Name -->
+			<legend>Node Editor</legend>
+			
+			<div class="form-group">
+			  <label class="col-md-4 control-label" for="latitude">Latitude</label>  
+			  <div class="col-md-4">
+			  <input id="lat" name="lat" type="text" placeholder="latitude" class="form-control input-md" value = "">
+			  <span class="help-block">Input the latitude</span>  
+			  </div>
+			</div>
+			
+			<div class="form-group">
+			  <label class="col-md-4 control-label" for="longitude">Longitude</label>  
+			  <div class="col-md-4">
+			  <input id="long" name="long" type="text" placeholder="longitude" class="form-control input-md">
+			  <span class="help-block" value = "">Input the longitude</span>  
+			  </div>
+			</div>
+			
+			<!-- Button -->
+			<div class="form-group">
+			  <label class="col-md-4 control-label" for="add"></label>
+			  <div class="col-md-4">
+				<button name="Add" value="Add" id="add" class="btn btn-primary" onclick="addmarker()">Add</button>
+			  </div>
+			</div>
+			
+			<!-- Select Multiple -->
+			<div class="form-group">
+			  <label class="col-md-4 control-label" for="coords">Coordinates</label>
+			  <div class="col-md-4">
+				<select id="myselect" multiple size="5" name="coords" class="form-control" multiple="multiple">
+				</select>
+			  </div>
+			</div>
+			
+			<div class="form-group" style="padding-left: 120px;">
+			<div class="col-md-12">
+			  <button name="Connect" class="btn btn-default btn-primary" value="Connect" type="button" onclick="getSelectValues()">Connect</button>
+			  <!--<button id="fetch" name="fetch" class="btn btn-default btn-primary" value="fetch" type="button">Fetch</button>-->
+			  <button name="Delete" class="btn btn-default btn-danger" value="Delete" type="button" onclick="deletemarker()">Delete</button>
+			  <!--<input class="btn btn-default btn-success" type="submit" value="Submit">-->
+			  
+			  </div>
+			</div>
+			</fieldset>
+	  </form>
+  </div>
+  <div class="container col-md-7">
+	<form class="form-horizontal" id="dataset">
+			<fieldset>
+			<!-- Form Name -->
+			<legend>Map</legend>
+			<div class="form-group" id="map" style="padding-left: 20px;"></div>
+			<div class="form-group" style="padding-left: 20px;">
+				<button id="new" name="new" class="btn btn-default btn-primary" value="new" type="button"onclick="mapclear()">New Network</button>
+			    <button id="Save" name="Save" class="btn btn-default btn-primary" value="Save" type="button">Save Network</button>
+			    <!--<button name="Clear" value="Clear" class="btn btn-default btn-primary" type="button" onclick="mapclear()">Clear Map</button> -->
+				<button id ="removepoly" name="removepoly" value="removepoly" class="btn btn-default btn-primary" type="button" onclick="deletepolyline()">Delete Selected Line</button>
+				<select class="selectpicker" id="graphname">
+                    <option value="-1">None</option>
+				</select>
+				<button id="fetchnetwork" name="fetchnetwork" class="btn btn-default btn-primary" value="fetchnetwork" type="button">Load Network</button>
+			</div>
+			</fieldset>
+	</form>
+  </div>
+
+        <script>
+
+        var network;
+        function getnetworkname() {
+            network = prompt("Please enter Network name", "");
+        }
+
+        function getnetworkname2() {
+            var e = document.getElementById("graphname");
+            network = e.options[e.selectedIndex].text;
+        }
+        </script>
+
+      <script type="text/javascript">
+        $(document).ready(function() {
+          var last_valid_selection = null;
+          $('#myselect').change(function() {
+            if ($(this).val().length > 2) {
+              $(this).val(last_valid_selection);
+                alert('You can select upto 2 options only');
+            } else {
+              last_valid_selection = $(this).val();
+            }
+          });
+        });
+        </script>
+   <script>
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 38.4484, lng: -97.0740},
+          zoom: 4
+        });
+
+      }
+
+      /*$(document).ready(function () {
+        $("#map").click(function (e) {
+            for(var i=0;i<markerarr.length;i++){
+                    google.maps.event.addListener(markerarr[i],  'rightclick',  function(mouseEvent) { alert('Right click triggered'); });
+            }
+
+        })
+      })*/
+
+      var markerarr = [];
+      var selectedmarker;
+      function addmarker() {
+          var lat = document.getElementById("lat").value;
+          var long = document.getElementById("long").value;
+          if(lat == "" || long == ""){
+              alert("Please enter both Latitude and Longitude");
+              return;
+          }
+
+          for(i=0;i<locationarr.length;i++)
+          {
+              if(locationarr[i][0] == lat && locationarr[i][1] == long)
+              {
+                  alert("Marker already exists");
+                  return;
+              }
+          }
+          //Unique id for each marker
+          var date = new Date();
+          var components = [
+                date.getYear(),
+                date.getMonth(),
+                date.getDate(),
+                date.getHours(),
+                date.getMinutes(),
+                date.getSeconds(),
+                date.getMilliseconds()
+          ];
+          var id = components.join("");
+          //---------------------------------
+          pushtoarray(lat, long, id);
+          pushtoarray2(lat, long, id);
+          var image = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
+          var mark = new google.maps.LatLng(lat, long);
+          var marker = new google.maps.Marker({
+            position: mark,
+            map: map,
+              icon : image
+        });
+          google.maps.event.addListener(marker,  'click',  function(mouseEvent) {
+              selectedmarker = marker;
+              var x=document.getElementById("myselect");
+              for(i = 0; i < x.options.length; i++)
+              {
+                  var loc = (x.options[i].text).split(",");
+                  if(loc[0] == lat && loc[1] == long)
+                  {
+                      x.focus();
+                      x.options[i].selected=true;
+                  }
+              }
+              /*alert('Right click triggered');*/ });
+          markerarr.push(marker);
+          //console.log(markerarr);
+      }
+
+       var polyarray = [];
+      function drawline(loc1, loc2) {
+          $("#myselect option:selected").removeAttr("selected");
+          var count =0;
+          var pos1 = (loc1.toString()).split(",");
+          var pos2 = (loc2.toString()).split(",");
+          /*marker = new google.maps.Marker({
+          position: new google.maps.LatLng(pos1[0], pos1[1]),
+          map: map
+          });
+          marker2 = new google.maps.Marker({
+          position: new google.maps.LatLng(pos2[0], pos2[1]),
+          map: map
+          });
+          marker.setAnimation(google.maps.Animation.DROP);
+          //marker.setIcon('http://maps.google.com/intl/en_us/mapfiles/ms/micons/purple.png');
+          marker2.setAnimation(google.maps.Animation.DROP);*/
+          var line = new google.maps.Polyline({
+            path: [
+                new google.maps.LatLng(pos1[0], pos1[1]),
+                new google.maps.LatLng(pos2[0], pos2[1])
+            ],
+            strokeColor: "#000000",
+            strokeOpacity: 1.0,
+            strokeWeight: 2,
+        });
+          console.log(line);
+
+          //line.setMap(map);
+          console.log("Poly Array Length : "+polyarray.length);
+          if(polyarray.length == 0)
+          {
+              nodeconnection(loc1, loc2);
+              polyarray.push(line);
+                  line.setMap(map);
+                  google.maps.event.addListener(line, 'click', function(latlng) {
+                  line.setOptions({strokeColor: '#00FFAA'});
+                  removepolyline(line);
+                });
+          }
+          else
+          {
+              var endnodeuid = 0;
+              var startnodeuid = 0;
+              for(i=0;i<grapharr.length;i++)
+              {
+                  if(grapharr[i].latitude == pos2[0] && grapharr[i].longitude == pos2[1])
+                      endnodeuid = grapharr[i].uid;
+              }
+              for(i=0;i<grapharr.length;i++)
+              {
+                  if(grapharr[i].latitude == pos1[0] && grapharr[i].longitude == pos1[1])
+                      startnodeuid = grapharr[i].uid;
+              }
+
+              for(i=0;i<grapharr.length;i++)
+              {
+                  if(grapharr[i].uid == startnodeuid)
+                  {
+                      for(j=0; j<grapharr[i].connectednodes.length;j++)
+                      {
+                          if(grapharr[i].connectednodes[j] == endnodeuid)
+                          {
+                              alert("Already Connected!!");
+                              count = count+1;
+                              return;
+                          }
+                      }
+                  }
+              }
+              if(count == 0){
+                  nodeconnection(loc1, loc2);
+                  polyarray.push(line);
+                  line.setMap(map);
+                  google.maps.event.addListener(line, 'click', function(latlng) {
+                  line.setOptions({strokeColor: '#00FFAA'});
+                  removepolyline(line);
+                });
+              }
+          }
+
+          //-----------------------------------------------------------
+          /*else{
+              console.log("Poly Array Length Else : "+polyarray.length);
+              for(i=0;i<polyarray.length;i++)
+            {
+                console.log("Poly Array Length For : "+polyarray.length+" i :"+i);
+                console.log(polyarray[0]);
+                console.log(line);
+              if(true)
+              {
+                  console.log("Count bfeore : "+count);
+                  alert("Already Connected!!");
+                  count = count+1;
+                  console.log("Count after : "+count);
+                  return;
+              }
+            }
+          }*/
+      }
+        
+      var deletepoly;
+      function removepolyline(line) {
+          if (deletepoly) {
+                deletepoly.setOptions({strokeColor: '#FF0000'});
+            }
+          deletepoly = line;
+          console.log(deletepoly);
+          document.getElementById("removepoly").disabled = false;
+      }
+      
+      function deletepolyline() {
+          document.getElementById("removepoly").disabled = true;
+          console.log("delete Poly : "+deletepoly.path);
+          deletepoly.setMap(null);
+      }
+
+      function getSelectValues() {
+          var x=document.getElementById("myselect");
+          var selectloc = [];
+          for (var i = 0; i < x.options.length; i++) {
+          if(x.options[i].selected ==true){
+              selectloc.push([x.options[i].text]);
+            }
+          }
+          var x = selectloc[0];
+          var y = selectloc[1];
+          drawline(x, y);
+          //nodeconnection(x,y);
+      }
+
+      function onloadfunc() {
+          document.getElementById("removepoly").disabled = true;
+          //document.getElementById("myselect").style.visibility="hidden";
+      }
+
+        var locationarr = [];
+      function pushtoarray(lat, long, id) {
+          var lati = lat;
+          var longi = long;
+          var uid = id;
+          locationarr.push([lati, longi, uid]);
+          for(i=0;i<locationarr.length;i++)
+          console.log(locationarr[i]);
+          tablegenerate(locationarr[i-1][0],locationarr[i-1][1],i-1);
+      }
+
+      function tablegenerate (markerLat,markerLong, i) {
+
+          marker = markerLat+','+markerLong;
+                var $formrow = '<tr><td>'+marker+'</td><td>'+i+'</td></tr>';
+                $('#myselect').append($('<option>', {
+                    value: i,
+                    text: marker
+                }));
+      }
+
+      var grapharr = [];
+      function pushtoarray2(lat, long, id) {
+          var uid = id;
+          var lati = lat;
+          var longi = long;
+          var node = new Object();
+          node.uid =uid;
+          node.latitude = lati;
+          node.longitude = longi;
+          node.connectednodes = [];
+          node.latlonx;
+          node.latlony;
+          console.log(node);
+          grapharr.push(node);
+          console.log(grapharr);
+          //alert(grapharr[0].latitude);
+      }
+
+      function nodeconnection(startnode, endnode) {
+          var pos1 = (startnode.toString()).split(",");
+          var pos2 = (endnode.toString()).split(",");
+          var endnodeuid = 0;
+
+          for(i=0;i<grapharr.length;i++)
+          {
+              if(grapharr[i].latitude == pos2[0] && grapharr[i].longitude == pos2[1])
+                  endnodeuid = grapharr[i].uid;
+          }
+
+          for(i=0;i<grapharr.length;i++)
+          {
+              if(grapharr[i].latitude == pos1[0] && grapharr[i].longitude == pos1[1])
+                  grapharr[i].connectednodes.push(endnodeuid);
+          }
+
+          /*console.log("index1: "+index1);
+          console.log("index2: "+index2);
+
+          console.log(grapharr[index1].connectednodes);
+          grapharr[index1].connectednodes.push(index2);
+
+          console.log(grapharr[index2].connectednodes);
+          grapharr[index2].connectednodes.push(index1);
+          console.log(grapharr);*/
+      }
+
+      function deletemarker() {
+          for(i=0;i<markerarr.length;i++)
+          {
+              if(markerarr[i]==selectedmarker)
+              {
+                  markerarr[i].setMap(null);
+                  markerarr.splice(i,1);
+              }
+
+          }
+          var x=document.getElementById("myselect");
+          var selectloc = [];
+          var uid;
+          var index;
+          for (var i = 0; i < x.options.length; i++) {
+          if(x.options[i].selected ==true){
+              var loc = (x.options[i].text).split(",");
+              x.remove(i);
+            }
+          }
+          for(var j=0; j<locationarr.length;j++) {
+              if(loc[0]== locationarr[j][0] && loc[1] == locationarr[j][1])
+              {
+                  index = j;
+                  uid = locationarr[j][2];
+              }
+          }
+          locationarr.splice(index,1);
+          console.log(locationarr);
+          for(i=0; i<grapharr.length;i++){
+              if(grapharr[i].uid ==  uid){
+                  grapharr.splice(i,1);
+              }
+          }
+          console.log(grapharr);
+          for(i=0; i<grapharr.length;i++){
+              for(j=0;j<grapharr[i].connectednodes.length;j++){
+                  //logic to delete connected nodes here
+                  if(grapharr[i].connectednodes[j] == uid)
+                      grapharr[i].connectednodes.splice(j,1);
+              }
+          }
+          console.log(grapharr);
+      }
+
+      function mapclear() {
+         initMap();
+                  grapharr = [];
+                  $('#myselect')
+                    .find('option')
+                    .remove()
+                    .end();
+         // initMap();
+          markerarr = [];
+                  locationarr = [];
+                  polyarray = [];
+      }
+      //used for testing purpose only
+      function printArray(){
+          console.log(JSON.stringify(grapharr));
+      }
+
+      function degree2meters(){
+          for(i=0; i<locationarr.length ; i++) {
+              var x = (grapharr[i].longitude + 180) / 360 * 256;
+              //var y = Math.log(Math.tan((90 + grapharr[i].latitude) * Math.PI / 360)) / (Math.PI / 180);
+              //y = y * 20037508.34 / 180;
+              var y = ((1 - Math.log(Math.tan(grapharr[i].latitude * Math.PI / 180) + 1 / Math.cos(grapharr[i].latitude * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, 0)) * 256
+              console.log(x);
+              console.log(y);
+              grapharr[i].latlonx = y;
+              grapharr[i].latlony = x;
+              console.log(grapharr);
+          }
+      }
+
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3aVWEFUmK1WTMlGv-jfJHsP03H7EHxaQ&callback=initMap"
+    async defer></script>
+
+    <script type="text/javascript">
+      $(document).on('submit','#dataset', function (e) {
+          e.preventDefault();
+
+          $.ajax({
+              type:'POST',
+              url:'/savedataset/',
+              data:{
+                  lat:$('#lat').val(),
+                  long:$('#long').val(),
+                  csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+              },
+              success:function (data) {
+                  //alert(data);
+
+              },
+              error:function () {
+                  //alert("Error")
+              }
+          })
+
+      });
+
+      $(document).ready(function () {
+          $("#fetch").click(function (e) {
+              $.ajax({
+                  type:'GET',
+                  url:'/fetchdata/',
+                  dataType:'json',
+                  success:function (data) {
+                      $(data).each(function (i) {
+                            //alert(data[5].fields.latitude);
+                            addmarkerdb(data[i].fields.latitude, data[i].fields.longitude);
+                      })
+                  }
+              })
+              
+          })
+          
+      })
+
+      // using jQuery
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
+      $(document).ready(function () {
+          $('#Save').click(function (e) {
+              getnetworkname();
+              degree2meters();
+              //alert(network);
+              $.ajax({
+                  type:'POST',
+                  url:'/savenetwork/?name='+network,
+                  data: JSON.stringify(grapharr),
+                  contentType:'application/json',
+                  success:function (data) {
+                      alert(network+" - Network saved successfully!!");
+                  },
+                  error:function () {
+                      alert("Map is empty!!!");
+                  }
+
+              })
+
+          })
+
+      })
+
+      $(document).ready(function () {
+              $.ajax({
+                  type:'GET',
+                  url:'/fetchgraphname/',
+                  dataType:'json',
+                  success:function (data) {
+                      $(data).each(function (i) {
+                         // data1 = JSON.parse(data[i]);
+                          //alert(data[i].fields.graphname);
+                          $('#graphname').append($('<option>', {
+                                value: data[i].fields.graphid,
+                                text:  data[i].fields.graphname
+                            }));
+                      })
+                  }
+              })
+
+      })
+
+      $(document).ready(function () {
+          $("#fetchnetwork").click(function (e) {
+              getnetworkname2();
+              //alert(network);
+              //window.location.reload();
+              //initMap();
+              if(network == "None"){
+                  alert("Please select the network from dropdown list");
+                  return;
+              }
+              if(grapharr.length > 0){
+                  initMap();
+                  grapharr = [];
+                  $('#myselect')
+                    .find('option')
+                    .remove()
+                    .end();
+                  markerarr = [];
+                  locationarr = [];
+                  polyarray = [];
+
+              }
+              $.ajax({
+                  type:'GET',
+                  url:'/loadnetwork/?name='+network,
+                  dataType:'json',
+                  success:function (data) {
+                      $(data).each(function (i) {
+                            //alert(data[5].fields.latitude);
+                            data1 = JSON.parse(data[i].fields.ConnectedPoints);
+                            //alert(data1.length);
+                            addmarkerdb(data[i].fields.Lat, data[i].fields.Long);
+
+                      })
+                      $(data).each(function (i) {
+
+                          var node = new Object();
+                          node.uid =data[i].fields.LatLongId;
+                          node.latitude = data[i].fields.Lat;
+                          node.longitude = data[i].fields.Long;
+                          node.connectednodes = [];
+                          grapharr.push(node);
+                          data1 = JSON.parse(data[i].fields.ConnectedPoints);
+                          for(var j=0; j<data1.length; j++)
+                          grapharr[i].connectednodes.push(data1[j]);
+                          console.log(grapharr);
+                          //alert(grapharr[i].connectednodes[0]);
+                            //data1 = JSON.parse(data[i].fields.ConnectedPoints);
+                            //alert(data1.length);
+
+                      })
+                      loadpolylines();
+                  }
+              })
+
+          })
+
+      })
+
+      function meter2latlong(x,y) {
+        var lon = x *  180 / 20037508.34 ;
+        var lat =Number(180 / Math.PI * (2 * Math.atan(Math.exp(y * Math.PI / 180)) - Math.PI / 2));
+        addmarkerdb(lat, lon);
+      }
+
+      function addmarkerdb(latdb, longdb) {
+          var lat = latdb;
+          var long = longdb;
+          pushtoarray(lat, long);
+          var image = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
+          var mark = new google.maps.LatLng(lat, long);
+          marker = new google.maps.Marker({
+            position: mark,
+            map: map,
+              icon : image
+        });
+      }
+
+      function loadpolylines(){
+          var temparr = [];
+          for(var i=0; i<grapharr.length; i++){
+              var uid = grapharr[i].uid;
+              //alert(uid);
+              var lat = grapharr[i].latitude;
+              var long = grapharr[i].longitude;
+              pos1 = lat+","+long;
+              //alert(pos1);
+              for(var j=0; j<grapharr[i].connectednodes.length; j++){
+                  //alert(grapharr[i].connectednodes[j]);
+                  for(var k=0; k<grapharr.length; k++){
+                      if(grapharr[k].uid == grapharr[i].connectednodes[j]){
+                          pos2 = grapharr[k].latitude+","+grapharr[k].longitude;
+                          var line = new google.maps.Polyline({
+                                path: [
+                                    new google.maps.LatLng(grapharr[i].latitude, grapharr[i].longitude),
+                                    new google.maps.LatLng(grapharr[k].latitude, grapharr[k].longitude)
+                                ],
+                                strokeColor: "#000000",
+                                strokeOpacity: 1.0,
+                                strokeWeight: 2,
+                            });
+                          line.setMap(map);
+                          //alert(pos2);
+                          //drawline(pos1, pos2);
+                      }
+                  }
+              }
+          }
+      }
+    </script>
+  </body>
+</html>

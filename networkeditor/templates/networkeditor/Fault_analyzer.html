@@ -1,0 +1,744 @@
+	<link href="https://fonts.googleapis.com/css?family=Exo+2" rel="stylesheet">
+<h2 style="font-family: 'Exo 2', sans-serif;">{{ mydata }}</h2>
+    <h3>{{data}}</h3>
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Rancho&effect=shadow-multiple">
+    <script type="text/javascript" src="{{ STATIC_URL }} /static/convex_hull.js"></script>
+    <title>NSRPT</title>
+    <meta name="viewport" content="initial-scale=1.0">
+    <meta charset="utf-8">
+    <style>
+      #map {
+          height: 70%;
+          width: 100%;
+      }
+    </style>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.1/css/bootstrap-select.min.css">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.1/js/bootstrap-select.min.js"></script>
+
+	<!-- (Optional) Latest compiled and minified JavaScript translation files -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.1/js/i18n/defaults-*.min.js"></script>
+  </head>
+  <body>
+  <nav class="navbar navbar-default">
+        <div class="container-fluid">
+
+            <!-- Logo -->
+            <!--<div class="navbar-header">
+                <a href="#" class="navbar-brand" style="font-family: Rancho">Network Science Tool</a>
+            </div>-->
+
+            <!-- Menu Items -->
+            <div>
+                <ul class="nav navbar-nav">
+                    <li><a href="{% url 'index' %}">Topology Manager</a></li>
+                    <li class="active"><a href="{% url 'Fault_Analyzer' %}">Fault Analyzer</a></li>
+                    <!--<li><a href="#">Path Analyzer</a></li>-->
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+	
+	<div class="container-fluid col-md-5">
+	<form class="form-horizontal" id="dataset"> {% csrf_token %}
+		<fieldset>
+
+			<!-- Form Name -->
+			<legend>Fault Analyzer</legend>
+			
+			<ul class="nav nav-tabs">
+			  <li class="active"><a data-toggle="tab" href="#generic">Generic Fault</a></li>
+			  <li><a data-toggle="tab" href="#specified">Specified Fault</a></li>
+			</ul>
+			
+			<div class="tab-content">
+			  <div id="generic" class="tab-pane fade in active">
+					<!-- Text input-->
+					<div class="form-group" style="padding-top: 20px;">
+					  <label class="col-md-4 control-label" for="radius">Radius</label>  
+					  <div class="col-md-4">
+					  <input id="radius" name="radius" type="text" placeholder="radius" class="form-control input-md">
+					  <span class="help-block">Input the radius of impact in KM</span>
+					  </div>
+					</div>
+
+					<!-- Button -->
+					<div class="form-group">
+					  <label class="col-md-4 control-label" for="analyse"></label>
+					  <div class="col-md-4">
+						<button id="analyse" name="analyse" class="btn btn-primary">Analyze network</button>
+					  </div>
+					</div>
+
+                  <div class="form-group">
+			  <label class="col-md-4 control-label" for="coords">Coordinates</label>
+			  <div class="col-md-4">
+				<select id="myselect" size="5" name="coords" class="form-control" multiple="multiple">
+				</select>
+			  </div>
+			</div>
+					
+					<form class="form-horizontal">
+						<fieldset>
+
+						<!-- Form Name -->
+
+						<!-- Text input-->
+						<div class="form-group">
+						  <label class="col-md-4 control-label" for="lcs">Largest Component Size</label>  
+						  <div class="col-md-4">
+						  <input id="lcs" name="lcs" type="text" placeholder="0" class="form-control input-md" readonly>
+							
+						  </div>
+						</div>
+
+						<!-- Text input-->
+						<div class="form-group">
+						  <label class="col-md-4 control-label" for="cdn">Component Decomposition Number</label>  
+						  <div class="col-md-4">
+						  <input id="cdn" name="cdn" type="text" placeholder="0" class="form-control input-md" readonly>
+							
+						  </div>
+						</div>
+
+						<!-- Text input-->
+						<div class="form-group">
+						  <label class="col-md-4 control-label" for="scs">Smallest Component Size</label>  
+						  <div class="col-md-4">
+						  <input id="scs" name="scs" type="text" placeholder="0" class="form-control input-md" readonly>
+							
+						  </div>
+						</div>
+
+						<!-- Text input-->
+						<div class="form-group">
+						  <label class="col-md-4 control-label" for="frc">Fault Regions Considered</label>  
+						  <div class="col-md-4">
+						  <input id="frc" name="frc" type="text" placeholder="0" class="form-control input-md" readonly>
+							
+						  </div>
+						</div>
+
+						</fieldset>
+						</form>
+
+					
+			  </div>
+			  <div id="specified" class="tab-pane fade">
+				<h3>Specified Fault</h3>
+				<!-- Text input-->
+					<form class="form-horizontal">
+						<fieldset>
+
+						<!-- Form Name -->
+						<!-- <legend>Form Name</legend> -->
+
+						<!-- Button -->
+						<!--<div class="form-group">
+						  <label class="col-md-4 control-label" for="faultcoor"> Step 1:</label>
+						  <div class="col-md-4">
+							<button id="faultcoor" name="faultcoor" class="btn btn-primary" style="width: 125%;">Define Fault Coordinates</button>
+						  </div>
+						</div>-->
+
+						<!-- Button -->
+						<div class="form-group">
+						  <!-- <label class="col-md-4 control-label" for="faultreg">Step 1:</label> -->
+						  <div class="col-md-8">
+							<button id="faultreg" name="faultreg" class="btn btn-primary" style="width: 125%;">Generate and Analyse Fault Region</button>
+						  </div>
+						</div>
+
+						<!-- Button -->
+						<!-- <div class="form-group">
+						  <label class="col-md-4 control-label" for="analysenet">Step 2:</label>
+						  <div class="col-md-4">
+							<button id="analysenet" name="analysenet" class="btn btn-primary" style="width: 125%;">Analyse Network</button>
+						  </div>
+						</div> -->
+
+						</fieldset>
+						</form>
+
+					
+				
+					<!-- <table class="table table-striped" id="mytable">
+					<caption>Fault Analysis</caption>
+					  <thead>
+						<tr>
+						  <th>#</th>
+						  <th>Sl.</th>
+						  <th>Latitude</th>
+						  <th>Longitude</th>
+						</tr>
+					  </thead>
+					  <tbody>
+						<tr>
+						  <th scope="row">1</th>
+						  <td>1</td>
+						  <td>200</td>
+						  <td>200</td>
+						</tr>
+					  </tbody>
+					</table> -->
+					
+					<form class="form-horizontal">
+						<fieldset>
+
+						<!-- Form Name -->
+
+						<!-- Text input-->
+						<div class="form-group">
+						  <label class="col-md-4 control-label" for="lcs">Number of Surviving Nodes</label>
+						  <div class="col-md-4">
+						  <input id="nsn" name="lcs" type="text" placeholder="0" class="form-control input-md" readonly>
+							
+						  </div>
+						</div>
+
+						<!-- Text input-->
+						<div class="form-group">
+						  <label class="col-md-4 control-label" for="cdn">Number of Surviving Links</label>
+						  <div class="col-md-4">
+						  <input id="nsl" name="cdn" type="text" placeholder="0" class="form-control input-md" readonly>
+							
+						  </div>
+						</div>
+
+						<!-- Text input-->
+						<div class="form-group">
+						  <label class="col-md-4 control-label" for="scs">Number of Connected Components</label>
+						  <div class="col-md-4">
+						  <input id="ncc" name="scs" type="text" placeholder="0" class="form-control input-md" readonly>
+							
+						  </div>
+						</div>
+
+						<!-- Text input-->
+						<div class="form-group">
+						  <label class="col-md-4 control-label" for="frc">Largest Connected Component Size</label>
+						  <div class="col-md-4">
+						  <input id="lcc" name="frc" type="text" placeholder="0" class="form-control input-md" readonly>
+							
+						  </div>
+						</div>
+
+                            <!-- Text input-->
+						<div class="form-group">
+						  <label class="col-md-4 control-label" for="frc">Smallest Connected Component Size</label>
+						  <div class="col-md-4">
+						  <input id="scc" name="frc" type="text" placeholder="0" class="form-control input-md" readonly>
+
+						  </div>
+						</div>
+
+						</fieldset>
+						</form>
+			  </div>
+			</div>
+		</fieldset>
+	</form>
+	</div>
+	<div class="container-fluid col-md-7">
+	<form class="form-horizontal" id="dataset">
+			<fieldset>
+			<!-- Form Name -->
+			<legend>Map</legend>
+			<div class="form-group" id="map" style="padding-left: 20px;"></div>
+			<div class="form-group" style="padding-left: 20px;">
+				<button id="clear" name="clear" class="btn btn-default btn-danger" value="clear" type="button" onclick=clearfaults()>Clear All Faults</button>
+				<!--<button id="save" name="save" class="btn btn-default btn-primary" value="save" type="button">Save Fault</button>
+			    <button id="load" name="load" class="btn btn-default btn-primary" value="load" type="button">Load Fault</button>
+			    <button name="delete" value="delete" class="btn btn-default btn-primary" type="button">Delete Saved Fault</button>
+				<button name="loadlib" value="loadlib" class="btn btn-default btn-primary" type="button">Load Fault from Library</button>-->
+                <select class="selectpicker" id="graphname">
+                    <option value="0">None</option>
+				</select>
+				<button id="fetchnetwork" name="fetchnetwork" class="btn btn-default btn-primary" value="fetchnetwork" type="button">Load Network</button>
+
+			</div>
+			</fieldset>
+	</form>
+  </div>
+</body>
+
+<script>
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 38.4484, lng: -97.0740},
+          zoom: 4
+        });
+            //alert($("ul.nav.nav-tabs li.active")[0].id)
+
+      }
+
+var listener1;
+$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    var target = $(e.target).attr("href") // activated tab
+    //alert(listener1);
+    if(target == "#specified"){
+     listener1 = google.maps.event.addListener(map, 'click', function(event) {
+           placeMarker(event.latLng);
+        });
+   }
+   else{
+        if(listener1){
+            google.maps.event.removeListener(listener1);
+        }
+   }
+   //alert(listener1);
+});
+</script>
+
+  <script>
+
+      // using jQuery
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie != '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        var csrftoken = getCookie('csrftoken');
+        function csrfSafeMethod(method) {
+            // these HTTP methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+
+      var radius;
+      $(document).ready(function () {
+          $("#analyse").click(function (e) {
+              e.preventDefault();
+              radius = document.getElementById("radius").value;
+              //alert(radius);
+              getnetworkname2();
+              if(grapharr.length==0){
+                  alert("Please select and load the Network");
+                  return;
+              }
+              if(radius == ''){
+                  alert("Please enter the Radius");
+                  return;
+              }
+              console.log(radius);
+              rad = radius*1000;
+              $.ajax({
+                  type:'GET',
+                  url:'/genericfault/?radius='+rad+'&network='+network,
+                  dataType:'json',
+                  success:function (data) {
+                      document.getElementById("lcs").value = data.c;
+                      document.getElementById("cdn").value = data.a;
+                      document.getElementById("scs").value = data.b;
+                      document.getElementById("frc").value = data.d;
+                      //data1 = JSON.parse(data)
+                     //alert(data.e[0]);
+                      $(data.e).each(function (i) {
+                          /*var table = document.getElementById("mytable");
+                            var row = table.insertRow(i);
+                            var cell1 = row.insertCell(0);
+                            var cell2 = row.insertCell(1);
+                            //var cell3 = row.insertCell(2);
+                            cell1.innerHTML = i+1;
+                            cell2.innerHTML = data.e[i];*/
+                            //cell3.innerHTML = data.e[i];
+                          //alert(data.e[i]);
+
+                          $('#myselect').append($('<option>', {
+                                value: i,
+                                text: data.e[i]
+                            }));
+                      })
+                  }
+              })
+
+          })
+
+      })
+
+
+  </script>
+
+  <script>
+      //Load existing graphs from database
+      $(document).ready(function () {
+              $.ajax({
+                  type:'GET',
+                  url:'/fetchgraphname/',
+                  dataType:'json',
+                  success:function (data) {
+                      $(data).each(function (i) {
+                         // data1 = JSON.parse(data[i]);
+                          //alert(data[i].fields.graphname);
+                          $('#graphname').append($('<option>', {
+                                value: data[i].fields.graphid,
+                                text:  data[i].fields.graphname
+                            }));
+                      })
+                  }
+              })
+
+      })
+  </script>
+
+  <script>
+      //Load Network for Fault Anaylsis
+      var grapharr = [];
+      var network;
+      $(document).ready(function () {
+          $("#fetchnetwork").click(function (e) {
+              getnetworkname2();
+              //alert(network);
+              //window.location.reload();
+              //initMap();
+              if(network == 'None'){
+                  alert("Please select the Network")
+                  return;
+              }
+              if(grapharr.length>0){
+                  initMap();
+                  grapharr = [];
+                  $('#myselect')
+                    .find('option')
+                    .remove()
+                    .end();
+
+                   document.getElementById("lcs").value = 0;
+                   document.getElementById("cdn").value = 0;
+                   document.getElementById("scs").value = 0;
+                   document.getElementById("frc").value = 0;
+                  document.getElementById("radius").value = '';
+              }
+              $.ajax({
+                  type:'GET',
+                  url:'/loadnetwork/?name='+network,
+                  dataType:'json',
+                  success:function (data) {
+                      $(data).each(function (i) {
+                            //alert(data[5].fields.latitude);
+                            data1 = JSON.parse(data[i].fields.ConnectedPoints);
+                            //alert(data1.length);
+                            addmarkerdb(data[i].fields.Lat, data[i].fields.Long);
+
+                      })
+                      $(data).each(function (i) {
+
+                          var node = new Object();
+                          node.uid =data[i].fields.LatLongId;
+                          node.latitude = data[i].fields.Lat;
+                          node.longitude = data[i].fields.Long;
+                          node.connectednodes = [];
+                          grapharr.push(node);
+                          data1 = JSON.parse(data[i].fields.ConnectedPoints);
+                          for(var j=0; j<data1.length; j++)
+                          grapharr[i].connectednodes.push(data1[j]);
+                          console.log(grapharr);
+                          //alert(grapharr[i].connectednodes[0]);
+                            //data1 = JSON.parse(data[i].fields.ConnectedPoints);
+                            //alert(data1.length);
+
+                      })
+                      loadpolylines();
+                  }
+              })
+
+          })
+
+      })
+
+      function loadpolylines(){
+          var temparr = [];
+          for(var i=0; i<grapharr.length; i++){
+              var uid = grapharr[i].uid;
+              //alert(uid);
+              var lat = grapharr[i].latitude;
+              var long = grapharr[i].longitude;
+              pos1 = lat+","+long;
+              //alert(pos1);
+              for(var j=0; j<grapharr[i].connectednodes.length; j++){
+                  //alert(grapharr[i].connectednodes[j]);
+                  for(var k=0; k<grapharr.length; k++){
+                      if(grapharr[k].uid == grapharr[i].connectednodes[j]){
+                          pos2 = grapharr[k].latitude+","+grapharr[k].longitude;
+                          var line = new google.maps.Polyline({
+                                path: [
+                                    new google.maps.LatLng(grapharr[i].latitude, grapharr[i].longitude),
+                                    new google.maps.LatLng(grapharr[k].latitude, grapharr[k].longitude)
+                                ],
+                                strokeColor: "#000000",
+                                strokeOpacity: 1.0,
+                                strokeWeight: 2,
+                            });
+                          line.setMap(map);
+                          //alert(pos2);
+                          //drawline(pos1, pos2);
+                      }
+                  }
+              }
+          }
+      }
+
+      function addmarkerdb(latdb, longdb) {
+          var lat = latdb;
+          var long = longdb;
+          //pushtoarray(lat, long);
+          var mark = new google.maps.LatLng(lat, long);
+          var image = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
+          marker = new google.maps.Marker({
+            position: mark,
+            map: map,
+            icon : image
+        });
+      }
+
+      function getnetworkname2() {
+            var e = document.getElementById("graphname");
+            network = e.options[e.selectedIndex].text;
+        }
+
+  </script>
+
+
+  <script type="text/javascript">
+      //Draw Circle
+      var circle;
+        $(document).ready(function() {
+          $('#myselect').change(function() {
+              if(circle)
+              circle.setMap(null);
+           var e = document.getElementById("myselect");
+              var center = e.options[e.selectedIndex].text;
+              var pos = (center.toString()).split(",");
+              var Lat = pos[0];
+              var Long = pos[1];
+              //alert(Lat);
+              //alert(Long);
+              radius = document.getElementById("radius").value;
+              circle = new google.maps.Circle({
+                  strokeColor: '#FF0000',
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2,
+                  fillColor: '#FF0000',
+                  fillOpacity: 0.35,
+                  map: map,
+                  center: {lat: Number(Lat), lng: Number(Long)},
+                  radius: radius*1000
+                });
+          });
+        });
+        </script>
+
+  <script>
+      //clear faults
+      function clearfaults() {
+          if(circle){
+              circle.setMap(null);
+              $('#myselect')
+                    .find('option')
+                    .remove()
+                    .end();
+
+                   document.getElementById("lcs").value = 0;
+                   document.getElementById("cdn").value = 0;
+                   document.getElementById("scs").value = 0;
+                   document.getElementById("frc").value = 0;
+                  document.getElementById("radius").value = '';
+          }
+          if(polyline){
+              polyline.setMap(null);
+              for(var i=0; i<markerrarr2.length; i++){
+                  if(markerrarr2){
+                      markerrarr2[i].setMap(null);
+                  }
+              }
+              document.getElementById("nsn").value = 0;
+                      document.getElementById("nsl").value = 0;
+                      document.getElementById("ncc").value = 0;
+                      document.getElementById("lcc").value = 0;
+                      document.getElementById("scc").value = 0;
+
+              hullPoints = [];
+              markerrarr2 = [];
+              points = [];
+              markerarr = [];
+          }
+
+      }
+
+  </script>
+
+  <script>
+      //Specific Fault
+      $(document).ready(function () {
+          $("#faultreg").click(function (e) {
+              e.preventDefault();
+              getnetworkname2();
+              if(grapharr.length==0){
+                  alert("Please select and load the Network");
+                  return;
+              }
+              if(markerarr.length <3){
+                  alert("Please place atleast 3 markers");
+                  return;
+              }
+              if(polyline){
+                  polyline.setOptions({strokeColor: '#FFC107',
+                                        strokeOpacity: 0.0,
+                                        strokeWeight: 2,
+                                        fillColor: '#FFC107',
+                                        fillOpacity: 0.0});
+              }
+              $.ajax({
+                  type:'POST',
+                  url:'/specificfault/',
+                  data : {'markerarr[]' : markerarr, 'name' : network},
+                  success:function (data) {
+                      document.getElementById("nsn").value = data.e;
+                      document.getElementById("nsl").value = data.d;
+                      document.getElementById("ncc").value = data.a;
+                      document.getElementById("lcc").value = data.b;
+                      document.getElementById("scc").value = data.c;
+                      //alert(data[0]);
+                      //alert(lat);
+                      //alert("Success!!");
+                      for (var i=0; i<markerarr.length; i++) {
+                          //hullpoints.push(markerarr[i]);
+                          var pos = (markerarr[i].toString()).split(",");
+                          lat = pos[0].replace(/[()]/g, '');
+                          lng = pos[1].replace(/[()]/g, '');
+                          lng = lng.replace(/\s/g,'');
+                          polypath.push({lat: Number(lat), lng: Number(lng)});
+                      }
+                      console.log(polypath);
+                      calculatehull();
+                  }
+              })
+
+          })
+
+      })
+
+      var markerarr = [];
+      var hullPoints = [];
+      var points = [];
+      var markerrarr2 = [];
+      var polyline;
+    function placeMarker(location) {
+        var image = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            icon : image
+        });
+        markerrarr2.push(marker);
+        markerarr.push(location);
+        //console.log(markerarr);
+        //console.log(markerrarr2);
+    }
+
+    function calculatehull() {
+        for (var i=0; i < markerrarr2.length; i++) {
+        points.push(markerrarr2[i].getPosition());
+      }
+      points.sort(sortPointY);
+      points.sort(sortPointX);
+      DrawHull();
+    }
+    function sortPointX(a,b) { return a.lng() - b.lng(); }
+    function sortPointY(a,b) { return a.lat() - b.lat(); }
+
+
+      function DrawHull() {
+            hullPoints = [];
+         chainHull_2D( points, points.length, hullPoints );
+          console.log(hullPoints);
+          polyline = new google.maps.Polygon({
+          map: map,
+          paths:hullPoints,
+          fillColor:"#FF0000",
+          strokeWidth:2,
+          fillOpacity:0.5,
+          strokeColor:"#0000FF",
+          strokeOpacity:0.5
+         });
+         displayHullPts(hullPoints);
+    }
+
+
+    function displayHullPts(hullPoints) {
+        for(var i=0; i < markerrarr2.length; i++){
+            var a = 0;
+            var x = markerrarr2[i].getPosition().toUrlValue();
+            for(var j=0; j < hullPoints.length; j++){
+                if(hullPoints[j].toUrlValue() == x){
+                    a = 1;
+                }
+            }
+            if(a==0){
+                    //alert(x);
+                removeMarker(i);
+                }
+        }
+
+    }
+
+    function removeMarker(i) {
+        try {
+            markerrarr2[i].setMap(null);
+        } catch (e) {}
+    }
+
+    var polypath = [];
+    function drawpolygon() {
+        var triangleCoords = [
+            {lat: 25.774, lng: -80.190},
+            {lat: 18.466, lng: -66.118},
+            {lat: 32.321, lng: -64.757},
+            {lat: 25.774, lng: -80.190}
+          ];
+        console.log(triangleCoords);
+
+          // Construct the polygon.
+          var bermudaTriangle = new google.maps.Polygon({
+            paths: polypath,
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35
+          });
+  bermudaTriangle.setMap(map);
+
+    }
+
+  </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3aVWEFUmK1WTMlGv-jfJHsP03H7EHxaQ&callback=initMap&libraries=geometry"
+async defer></script>
