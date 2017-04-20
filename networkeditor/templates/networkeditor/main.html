@@ -115,7 +115,7 @@
 	</form>
   </div>
 
-        <script>
+        <script type="text/javascript">
 
         var network;
         function getnetworkname() {
@@ -141,7 +141,7 @@
           });
         });
         </script>
-   <script>
+   <script type="text/javascript">
       var map;
       function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
@@ -150,15 +150,6 @@
         });
 
       }
-
-      /*$(document).ready(function () {
-        $("#map").click(function (e) {
-            for(var i=0;i<markerarr.length;i++){
-                    google.maps.event.addListener(markerarr[i],  'rightclick',  function(mouseEvent) { alert('Right click triggered'); });
-            }
-
-        })
-      })*/
 
       var markerarr = [];
       var selectedmarker;
@@ -316,12 +307,10 @@
           var x = selectloc[0];
           var y = selectloc[1];
           drawline(x, y);
-          //nodeconnection(x,y);
       }
 
       function onloadfunc() {
           document.getElementById("removepoly").disabled = true;
-          //document.getElementById("myselect").style.visibility="hidden";
       }
 
         var locationarr = [];
@@ -360,7 +349,6 @@
           console.log(node);
           grapharr.push(node);
           console.log(grapharr);
-          //alert(grapharr[0].latitude);
       }
 
       function nodeconnection(startnode, endnode) {
@@ -379,16 +367,6 @@
               if(grapharr[i].latitude == pos1[0] && grapharr[i].longitude == pos1[1])
                   grapharr[i].connectednodes.push(endnodeuid);
           }
-
-          /*console.log("index1: "+index1);
-          console.log("index2: "+index2);
-
-          console.log(grapharr[index1].connectednodes);
-          grapharr[index1].connectednodes.push(index2);
-
-          console.log(grapharr[index2].connectednodes);
-          grapharr[index2].connectednodes.push(index1);
-          console.log(grapharr);*/
       }
 
       function deletemarker() {
@@ -456,8 +434,6 @@
       function degree2meters(){
           for(i=0; i<locationarr.length ; i++) {
               var x = (grapharr[i].longitude + 180) / 360 * 256;
-              //var y = Math.log(Math.tan((90 + grapharr[i].latitude) * Math.PI / 360)) / (Math.PI / 180);
-              //y = y * 20037508.34 / 180;
               var y = ((1 - Math.log(Math.tan(grapharr[i].latitude * Math.PI / 180) + 1 / Math.cos(grapharr[i].latitude * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, 0)) * 256
               console.log(x);
               console.log(y);
@@ -571,8 +547,6 @@
                   dataType:'json',
                   success:function (data) {
                       $(data).each(function (i) {
-                         // data1 = JSON.parse(data[i]);
-                          //alert(data[i].fields.graphname);
                           $('#graphname').append($('<option>', {
                                 value: data[i].fields.graphid,
                                 text:  data[i].fields.graphname
@@ -586,9 +560,6 @@
       $(document).ready(function () {
           $("#fetchnetwork").click(function (e) {
               getnetworkname2();
-              //alert(network);
-              //window.location.reload();
-              //initMap();
               if(network == "None"){
                   alert("Please select the network from dropdown list");
                   return;
@@ -629,9 +600,6 @@
                           for(var j=0; j<data1.length; j++)
                           grapharr[i].connectednodes.push(data1[j]);
                           console.log(grapharr);
-                          //alert(grapharr[i].connectednodes[0]);
-                            //data1 = JSON.parse(data[i].fields.ConnectedPoints);
-                            //alert(data1.length);
 
                       })
                       loadpolylines();
@@ -684,9 +652,7 @@
                                 strokeOpacity: 1.0,
                                 strokeWeight: 2,
                             });
-                          line.setMap(map);
-                          //alert(pos2);
-                          //drawline(pos1, pos2);
+                          line.setMap(map); 
                       }
                   }
               }
