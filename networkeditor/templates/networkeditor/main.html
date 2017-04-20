@@ -223,17 +223,6 @@
           var count =0;
           var pos1 = (loc1.toString()).split(",");
           var pos2 = (loc2.toString()).split(",");
-          /*marker = new google.maps.Marker({
-          position: new google.maps.LatLng(pos1[0], pos1[1]),
-          map: map
-          });
-          marker2 = new google.maps.Marker({
-          position: new google.maps.LatLng(pos2[0], pos2[1]),
-          map: map
-          });
-          marker.setAnimation(google.maps.Animation.DROP);
-          //marker.setIcon('http://maps.google.com/intl/en_us/mapfiles/ms/micons/purple.png');
-          marker2.setAnimation(google.maps.Animation.DROP);*/
           var line = new google.maps.Polyline({
             path: [
                 new google.maps.LatLng(pos1[0], pos1[1]),
@@ -298,24 +287,6 @@
               }
           }
 
-          //-----------------------------------------------------------
-          /*else{
-              console.log("Poly Array Length Else : "+polyarray.length);
-              for(i=0;i<polyarray.length;i++)
-            {
-                console.log("Poly Array Length For : "+polyarray.length+" i :"+i);
-                console.log(polyarray[0]);
-                console.log(line);
-              if(true)
-              {
-                  console.log("Count bfeore : "+count);
-                  alert("Already Connected!!");
-                  count = count+1;
-                  console.log("Count after : "+count);
-                  return;
-              }
-            }
-          }*/
       }
         
       var deletepoly;
