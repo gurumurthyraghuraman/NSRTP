@@ -10,7 +10,7 @@ from shapely.geometry import MultiPoint
 
 def index(request):
     print("Hello")
-    data = {'mydata' : "Network Science Research Tool Project (Hello lazy Parulitaaa!!)"}
+    data = {'mydata' : "Network Science Research Tool Project"}
     return render(request, 'networkeditor/main.html', data)
 
 def faultAnalyzer(request):
