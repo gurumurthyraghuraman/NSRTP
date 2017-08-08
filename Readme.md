@@ -21,11 +21,10 @@ Project Members:
 3. Used DFS to calculate the number of connected components, size of the smallest and the largest component. 
 4. Performed step 2 and 3 for custom faults as well.
 
-The implementation is followed from the research paper mentioned below:
+# Reference
 Arun Das,Arunabha Sen,Chunming Qiao,Nasir Ghani,Nathalie Mitton
 'A Network Planning and Management Tool for Mitigating the Impact of Spatially Correlated Failures in Infrastructure Networks',
 2016 12th Int. Conference on the Design of Reliable Communication Networks (DRCN 2016)
-
 
 Also you can refer NSRTP Final Report.pdf for additional details.
 
